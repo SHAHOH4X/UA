@@ -1,11 +1,9 @@
 import random
 import requests
-from colorama import Fore, Style, init
+from colorama import Fore, init
 
-# Initialize colorama
 init(autoreset=True)
 
-# UA ASCII Logo
 ua_logo = """
  ██    ██  █████  ██████  
  ██    ██ ██   ██ ██   ██ 
@@ -27,12 +25,12 @@ devices = {
 
 android_versions = ["10", "11", "12", "13"]
 fb_versions = ["425.0.0.28.60", "424.0.0.37.64", "423.1.0.36.68"]
+carriers = ["Airtel", "T-Mobile", "Jio", "Grameenphone", "Robi", "Banglalink", "Verizon", "AT&T", "Vodafone"]
 
-# Updated GitHub approval list link
 APPROVAL_LIST_URL = "https://raw.githubusercontent.com/SHAHOH4X/UA/main/Approval%20txt"
 
-def print_colored_logo(logo):
-    for line in logo.splitlines():
+def print_colored_logo():
+    for line in ua_logo.strip().splitlines():
         print(random.choice(colors) + line)
 
 def check_approval(user_id):
@@ -44,22 +42,13 @@ def check_approval(user_id):
         print(f"[ERROR] Approval check failed: {e}")
         return False
 
-def generate_fbmf_ua():
-    print("\nChoose a brand:")
-    for i, brand in enumerate(devices.keys(), start=1):
-        print(f"{i}. {brand}")
-    brand_choice = int(input("Enter choice number: ")) - 1
-    brand = list(devices.keys())[brand_choice]
-
-    print(f"\nChoose a model for {brand}:")
-    for i, model in enumerate(devices[brand], start=1):
-        print(f"{i}. {model}")
-    model_choice = int(input("Enter model number: ")) - 1
-    model = devices[brand][model_choice]
-
+def generate_random_ua():
+    brand = random.choice(list(devices.keys()))
+    model = random.choice(devices[brand])
     android_version = random.choice(android_versions)
     fb_version = random.choice(fb_versions)
     dpi = random.choice(["xxhdpi", "xhdpi"])
+    sim = random.choice(carriers)
     resolution = random.choice(["1080x2400", "720x1600", "1080x2340"])
 
     ua = (
@@ -67,25 +56,24 @@ def generate_fbmf_ua():
         f"AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
         f"Chrome/109.0.0.0 Mobile Safari/537.36 "
         f"[FB_IAB/FB4A;FBAV/{fb_version};FBBV/123456789;FBLC/en_US;FBDV/{model};"
-        f"FBCR/Carrier;FBMF/{brand};FBBD/{brand};FBSV/{android_version};"
+        f"FBCR/{sim};FBMF/{brand};FBBD/{brand};FBSV/{android_version};"
         f"FBCA/armeabi-v7a:armeabi;FBDM={{density={dpi},width=1080,height=1920}}]"
     )
-
-    color = random.choice(colors)
-    print(f"\n{color}Generated User-Agent:\n{ua}\n")
+    return ua
 
 if __name__ == "__main__":
-    print_colored_logo(ua_logo)
-    print("Enter your user ID for approval check:")
-    user_id = input("User ID: ").strip()
+    print_colored_logo()
+    user_id = input("Enter your user ID for approval check: ").strip()
 
     if check_approval(user_id):
         print(Fore.GREEN + "[✓] Permission Approved!\n")
-        while True:
-            generate_fbmf_ua()
-            again = input("Generate another UA? (y/n): ").strip().lower()
-            if again != 'y':
-                break
+        try:
+            count = int(input("How many random UAs do you want to generate? "))
+            for _ in range(count):
+                ua = generate_random_ua()
+                print(random.choice(colors) + ua + "\n")
+        except ValueError:
+            print(Fore.RED + "[X] Invalid number.")
     else:
         print(Fore.RED + "[X] Permission Denied. Contact admin for access.")
         print("Contact: https://www.facebook.com/md.shaharia.1675275")
