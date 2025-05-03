@@ -1,19 +1,19 @@
 import random
 import requests
+import os
 from colorama import Fore, init
 
 init(autoreset=True)
 
-ua_logo = """
- ██    ██  █████  ██████  
- ██    ██ ██   ██ ██   ██ 
- ██    ██ ███████ ██████  
- ██    ██ ██   ██ ██   ██ 
-  ██████  ██   ██ ██   ██ 
-"""
+# GitHub information
+GITHUB_USERNAME = "YOUR_GITHUB_USERNAME"  # Replace with your GitHub username
+REPO_NAME = "YOUR_REPO_NAME"  # Replace with your GitHub repo name
+GITHUB_TOKEN = "YOUR_GITHUB_TOKEN"  # Replace with your GitHub personal access token
 
-colors = [Fore.RED, Fore.GREEN, Fore.BLUE, Fore.CYAN, Fore.MAGENTA, Fore.YELLOW, Fore.WHITE]
+APPROVED_TOKENS_FILE = "approved_tokens.txt"  # File where approved tokens are stored
+USED_TOKENS_FILE = "used_tokens.txt"  # File to store used tokens
 
+# UAs generator data
 devices = {
     "Samsung": ["SM-G991B", "SM-A515F", "SM-M127F"],
     "Xiaomi": ["M2012K11AG", "21091116UG", "M2007J20CG"],
@@ -27,21 +27,26 @@ android_versions = ["10", "11", "12", "13"]
 fb_versions = ["425.0.0.28.60", "424.0.0.37.64", "423.1.0.36.68"]
 carriers = ["Airtel", "T-Mobile", "Jio", "Grameenphone", "Robi", "Banglalink", "Verizon", "AT&T", "Vodafone"]
 
-APPROVAL_LIST_URL = "https://raw.githubusercontent.com/SHAHOH4X/UA/main/Approval%20txt"
+# Function to get the list of approved tokens from GitHub
+def get_approved_tokens():
+    url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{REPO_NAME}/main/{APPROVED_TOKENS_FILE}"
+    response = requests.get(url)
+    return response.text.splitlines()
 
-def print_colored_logo():
-    for line in ua_logo.strip().splitlines():
-        print(random.choice(colors) + line)
+# Function to check if a token has been used
+def check_used_token(token):
+    if os.path.exists(USED_TOKENS_FILE):
+        with open(USED_TOKENS_FILE, "r") as file:
+            used_tokens = file.read().splitlines()
+        return token in used_tokens
+    return False
 
-def check_approval(user_id):
-    try:
-        response = requests.get(APPROVAL_LIST_URL)
-        approved_users = response.text.strip().splitlines()
-        return user_id in approved_users
-    except Exception as e:
-        print(f"[ERROR] Approval check failed: {e}")
-        return False
+# Function to mark a token as used
+def mark_token_as_used(token):
+    with open(USED_TOKENS_FILE, "a") as file:
+        file.write(token + "\n")
 
+# Function to generate a random user-agent (UA)
 def generate_random_ua():
     brand = random.choice(list(devices.keys()))
     model = random.choice(devices[brand])
@@ -49,7 +54,6 @@ def generate_random_ua():
     fb_version = random.choice(fb_versions)
     dpi = random.choice(["xxhdpi", "xhdpi"])
     sim = random.choice(carriers)
-    resolution = random.choice(["1080x2400", "720x1600", "1080x2340"])
 
     ua = (
         f"Mozilla/5.0 (Linux; Android {android_version}; {model}) "
@@ -61,19 +65,25 @@ def generate_random_ua():
     )
     return ua
 
+# Main function
 if __name__ == "__main__":
-    print_colored_logo()
-    user_id = input("Enter your user ID for approval check: ").strip()
+    token = input("Enter your approval token: ").strip()
 
-    if check_approval(user_id):
-        print(Fore.GREEN + "[✓] Permission Approved!\n")
-        try:
-            count = int(input("How many random UAs do you want to generate? "))
-            for _ in range(count):
-                ua = generate_random_ua()
-                print(random.choice(colors) + ua + "\n")
-        except ValueError:
-            print(Fore.RED + "[X] Invalid number.")
+    # Check if the token is approved
+    approved_tokens = get_approved_tokens()
+    if token in approved_tokens:
+        if check_used_token(token):
+            print(Fore.RED + "[X] This token has already been used. You cannot use it again.")
+        else:
+            print(Fore.GREEN + "[✓] Token validated successfully.")
+            mark_token_as_used(token)
+
+            try:
+                count = int(input("How many random UAs do you want to generate? "))
+                for _ in range(count):
+                    ua = generate_random_ua()
+                    print(random.choice([Fore.RED, Fore.GREEN, Fore.BLUE, Fore.CYAN, Fore.MAGENTA, Fore.YELLOW, Fore.WHITE]) + ua + "\n")
+            except ValueError:
+                print(Fore.RED + "[X] Invalid number.")
     else:
-        print(Fore.RED + "[X] Permission Denied. Contact admin for access.")
-        print("Contact: https://www.facebook.com/md.shaharia.1675275")
+        print(Fore.RED + "[X] Invalid or unapproved token.")
