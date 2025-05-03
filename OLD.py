@@ -28,7 +28,8 @@ devices = {
 android_versions = ["10", "11", "12", "13"]
 fb_versions = ["425.0.0.28.60", "424.0.0.37.64", "423.1.0.36.68"]
 
-APPROVAL_LIST_URL = "https://raw.githubusercontent.com/yourusername/your-repo/main/approved_users.txt"  # Replace this
+# Updated GitHub approval list link
+APPROVAL_LIST_URL = "https://raw.githubusercontent.com/SHAHOH4X/UA/main/Approval%20txt"
 
 def print_colored_logo(logo):
     for line in logo.splitlines():
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     print_colored_logo(ua_logo)
     print("Enter your user ID for approval check:")
     user_id = input("User ID: ").strip()
-    
+
     if check_approval(user_id):
         print(Fore.GREEN + "[✓] Permission Approved!\n")
         while True:
